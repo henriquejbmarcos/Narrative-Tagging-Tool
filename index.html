@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Narrative Tagging Tool – Prototype</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
+      color: #222;
+    }
+
+    header {
+      background-color: #1f2933;
+      color: #ffffff;
+      padding: 12px 20px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    main.container {
+      display: flex;
+      flex-direction: row;
+      padding: 12px;
+      gap: 12px;
+      min-height: auto; /* removed forced long height */
+    }
+
+    .panel {
+      background-color: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #input-panel {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #controls-panel {
+      flex: 1;
+      min-width: 270px;
+    }
+
+    #output-panel {
+      flex: 1;
+      min-width: 0;
+    }
+
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+    }
+
+    h3 {
+      margin: 8px 0 4px 0;
+      font-size: 14px;
+    }
+
+    .instructions {
+      font-size: 12px;
+      color: #555;
+      margin: 0 0 4px 0;
+    }
+
+    textarea,
+    select,
+    input[type="text"] {
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid #cbd2d9;
+      padding: 6px 8px;
+      font-size: 13px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    textarea:focus,
+    select:focus,
+    input[type="text"]:focus,
+    button:focus {
+      outline: 2px solid #2563eb;
+      outline-offset: 1px;
+    }
+
+    #inputText {
+      flex: 1;
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    #selectedText {
+      min-height: 60px;
+      max-height: 120px;
+      resize: vertical;
+    }
+
+    #noteInput {
+      min-height: 60px;
+      max-height: 160px;
+      resize: vertical;
+    }
+
+    #jsonOutput {
+      flex: 1;
+      min-height: 130px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre;
+      resize: none;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      display: block;
+    }
+
+    .narrative-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    .narrative-button {
+      border-radius: 999px;
+      border: 1px solid #cbd2d9;
+      background-color: #f9fafb;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .narrative-button:hover {
+      background-color: #e5f0ff;
+      border-color: #2563eb;
+    }
+
+    .narrative-button.active {
+      background-color: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+
+    .tag-form {
+      border-top: 1px solid #e1e4e8;
+      padding-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .add-narrative {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .add-narrative input[type="text"] {
+      flex: 1;
+      font-size: 12px;
+    }
+
+    .controls-footer {
+      margin-top: auto;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+      border-top: 1px solid #e1e4e8;
+    }
+
+    button {
+      border-radius: 4px;
+      border: 1px solid #cbd2d9;
+      background-color: #f3f4f6;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+    }
+
+    button:hover {
+      background-color: #e5f0ff;
+      border-color: #2563eb;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    #addTagButton {
+      align-self: flex-start;
+      background-color: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    #addTagButton:hover {
+      background-color: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    #clearTagsButton {
+      background-color: #fef2f2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    #clearTagsButton:hover {
+      background-color: #fee2e2;
+      border-color: #fca5a5;
+    }
+
+    #copyJsonButton {
+      background-color: #ecfdf5;
+      border-color: #bbf7d0;
+      color: #166534;
+    }
+
+    #copyJsonButton:hover {
+      background-color: #dcfce7;
+      border-color: #86efac;
+    }
+
+    @media (max-width: 800px) {
+      main.container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Narrative Tagging Tool – Prototype
+  </header>
+
+  <main class="container">
+    <!-- Left panel: Input text -->
+    <section class="panel" id="input-panel">
+      <h2>Input text</h2>
+      <p class="instructions">
+        Paste or type the text here. Select a span of text, choose a narrative, and add a reasoning note.
+      </p>
+      <textarea id="inputText" placeholder="Paste or type your legal or policy text here..."></textarea>
+    </section>
+
+    <!-- Middle panel: Tagging controls -->
+    <section class="panel" id="controls-panel">
+      <h2>Tagging controls</h2>
+
+      <div class="narratives-section">
+        <h3>Narrative labels</h3>
+        <!-- Narrative buttons are rendered here from the default labels array -->
+        <div id="narrativeButtons" class="narrative-buttons"></div>
+
+        <!-- Optional: add new narrative label at runtime -->
+        <div class="add-narrative">
+          <input type="text" id="newNarrativeInput" placeholder="Add new narrative label...">
+          <button id="addNarrativeButton" type="button">Add narrative</button>
+        </div>
+      </div>
+
+      <div class="tag-form">
+        <div>
+          <label for="selectedText">Selected text</label>
+          <!-- Read-only field showing currently selected text in the input textarea -->
+          <textarea id="selectedText" readonly placeholder="Select text in the left panel to see it here."></textarea>
+        </div>
+
+        <div>
+          <label for="narrativeSelect">Narrative</label>
+          <!-- Dropdown mirroring narrative labels -->
+          <select id="narrativeSelect">
+            <option value="">-- Select narrative --</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="noteInput">Reasoning note</label>
+          <textarea id="noteInput" placeholder="Optional: Why does this excerpt reflect this narrative?"></textarea>
+        </div>
+
+        <button id="addTagButton" type="button">Add tag</button>
+      </div>
+
+      <div class="controls-footer">
+        <button id="clearTagsButton" type="button">Clear tags</button>
+        <button id="copyJsonButton" type="button">Copy JSON to clipboard</button>
+      </div>
+    </section>
+
+    <!-- Right panel: Output JSON -->
+    <section class="panel" id="output-panel">
+      <h2>Output (JSON)</h2>
+      <!-- Read-only JSON output, updated whenever tags change -->
+      <textarea id="jsonOutput" readonly>[]</textarea>
+    </section>
+  </main>
+
+  <script>
+    // Default narrative labels (used for both buttons and dropdown)
+    const defaultNarratives = [
+      'Innovation / technological progress',
+      'Conservation / ecological limits',
+      'Sustainability / precaution',
+      'Fairness / benefit-sharing',
+      'Urgency / flexibility'
+    ];
+
+    // In-memory store for tags
+    let tags = [];
+    let nextTagId = 1;
+
+    // Cached DOM elements
+    const inputTextEl = document.getElementById('inputText');
+    const selectedTextEl = document.getElementById('selectedText');
+    const narrativeButtonsContainer = document.getElementById('narrativeButtons');
+    const narrativeSelectEl = document.getElementById('narrativeSelect');
+    const noteInputEl = document.getElementById('noteInput');
+    const addTagButton = document.getElementById('addTagButton');
+    const clearTagsButton = document.getElementById('clearTagsButton');
+    const copyJsonButton = document.getElementById('copyJsonButton');
+    const jsonOutputEl = document.getElementById('jsonOutput');
+    const newNarrativeInputEl = document.getElementById('newNarrativeInput');
+    const addNarrativeButton = document.getElementById('addNarrativeButton');
+
+    // Current list of narratives (starts with defaultNarratives)
+    let narratives = [...defaultNarratives];
+
+    // Render narrative buttons and dropdown options based on current narratives array
+    function renderNarratives() {
+      // Clear existing buttons
+      narrativeButtonsContainer.innerHTML = '';
+      // Clear dropdown options except placeholder
+      const placeholderOption = narrativeSelectEl.querySelector('option[value=""]');
+      narrativeSelectEl.innerHTML = '';
+      if (placeholderOption) {
+        narrativeSelectEl.appendChild(placeholderOption);
+      } else {
+        const newPlaceholder = document.createElement('option');
+        newPlaceholder.value = '';
+        newPlaceholder.textContent = '-- Select narrative --';
+        narrativeSelectEl.appendChild(newPlaceholder);
+      }
+
+      narratives.forEach(label => {
+        // Button
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'narrative-button';
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          setActiveNarrative(label);
+        });
+        narrativeButtonsContainer.appendChild(btn);
+
+        // Dropdown option
+        const opt = document.createElement('option');
+        opt.value = label;
+        opt.textContent = label;
+        narrativeSelectEl.appendChild(opt);
+      });
+
+      // If a narrative was previously selected, keep it if still present
+      const currentValue = narrativeSelectEl.getAttribute('data-current-value');
+      if (currentValue && narratives.includes(currentValue)) {
+        narrativeSelectEl.value = currentValue;
+        highlightActiveButton(currentValue);
+      }
+    }
+
+    // Highlight selected narrative button and update dropdown
+    function setActiveNarrative(label) {
+      narrativeSelectEl.value = label;
+      narrativeSelectEl.setAttribute('data-current-value', label);
+      highlightActiveButton(label);
+    }
+
+    // Apply active class to the button with the given label
+    function highlightActiveButton(label) {
+      const buttons = narrativeButtonsContainer.querySelectorAll('.narrative-button');
+      buttons.forEach(btn => {
+        if (btn.textContent === label) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Capture selected text from the left textarea and show it in the read-only field
+    function updateSelectedTextFromTextarea() {
+      const start = inputTextEl.selectionStart;
+      const end = inputTextEl.selectionEnd;
+
+      if (typeof start === 'number' && typeof end === 'number' && end > start) {
+        const selected = inputTextEl.value.substring(start, end);
+        selectedTextEl.value = selected.trim();
+      } else {
+        selectedTextEl.value = '';
+      }
+    }
+
+    // Create a new tag based on selected text, chosen narrative, and note
+    function handleAddTag() {
+      const excerpt = selectedTextEl.value.trim();
+      const narrative = narrativeSelectEl.value;
+      const note = noteInputEl.value.trim();
+
+      if (!excerpt) {
+        alert('Please select some text in the left panel first.');
+        return;
+      }
+
+      if (!narrative) {
+        alert('Please choose a narrative label.');
+        return;
+      }
+
+      const tag = {
+        id: nextTagId++,
+        excerpt: excerpt,
+        narrative: narrative,
+        note: note || '',
+        timestamp: new Date().toISOString()
+      };
+
+      tags.push(tag);
+      updateJsonOutput();
+
+      // Optional: clear note field after adding
+      noteInputEl.value = '';
+    }
+
+    // Render tags array as pretty-printed JSON in the right panel
+    function updateJsonOutput() {
+      if (!tags.length) {
+        jsonOutputEl.value = '[]';
+      } else {
+        jsonOutputEl.value = JSON.stringify(tags, null, 2);
+      }
+    }
+
+    // Clear all tags and reset JSON output
+    function handleClearTags() {
+      if (!tags.length) {
+        return;
+      }
+      const confirmClear = confirm('Clear all tags? This cannot be undone.');
+      if (!confirmClear) {
+        return;
+      }
+      tags = [];
+      nextTagId = 1;
+      updateJsonOutput();
+    }
+
+    // Copy JSON output to clipboard
+    function handleCopyJson() {
+      const textToCopy = jsonOutputEl.value;
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+        // Fallback: select text and rely on user copy
+        jsonOutputEl.focus();
+        jsonOutputEl.select();
+        alert('Clipboard API not available. JSON selected – use Ctrl+C / Cmd+C to copy.');
+        return;
+      }
+
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => {
+          alert('JSON copied to clipboard.');
+        })
+        .catch(() => {
+          alert('Could not copy JSON to clipboard.');
+        });
+    }
+
+    // Add a new narrative label at runtime
+    function handleAddNarrative() {
+      const label = newNarrativeInputEl.value.trim();
+      if (!label) {
+        alert('Please enter a narrative label.');
+        return;
+      }
+      if (narratives.includes(label)) {
+        alert('This narrative label already exists.');
+        return;
+      }
+      narratives.push(label);
+      newNarrativeInputEl.value = '';
+      renderNarratives();
+      setActiveNarrative(label);
+    }
+
+    // Initialise event listeners and default state
+    function init() {
+      renderNarratives();
+      updateJsonOutput();
+
+      // Capture selected text events from the input textarea
+      inputTextEl.addEventListener('mouseup', updateSelectedTextFromTextarea);
+      inputTextEl.addEventListener('keyup', updateSelectedTextFromTextarea);
+      inputTextEl.addEventListener('select', updateSelectedTextFromTextarea);
+      inputTextEl.addEventListener('touchend', updateSelectedTextFromTextarea);
+
+      addTagButton.addEventListener('click', handleAddTag);
+      clearTagsButton.addEventListener('click', handleClearTags);
+      copyJsonButton.addEventListener('click', handleCopyJson);
+      addNarrativeButton.addEventListener('click', handleAddNarrative);
+
+      newNarrativeInputEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleAddNarrative();
+        }
+      });
+
+      // Keep track of current narrative selection
+      narrativeSelectEl.addEventListener('change', () => {
+        const value = narrativeSelectEl.value;
+        narrativeSelectEl.setAttribute('data-current-value', value);
+        highlightActiveButton(value);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+  <footer style="text-align:center; padding:10px; font-size:12px; color:#555;">Created by Henrique Marcos (2025) </footer>
+</body>
+</html>
